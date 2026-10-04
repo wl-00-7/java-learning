@@ -1,0 +1,30 @@
+1
+  redo log，undo log是InnoDB引擎层；binlog是Sever层
+2  WAL（Write-Ahead logging，预写式日志）：修改数据页之前，先把修改记录写进redo log并落盘，脏页之后由后台线程异步刷盘
+为什么先写日志：redo log是顺序追加写，数据页是随机写，顺序写比随机写快一个量级；commit只需要redo log落盘就返回成功，不用等脏页刷盘
+3  commit后数据没落盘————肯没落到数据页（脏页还在Buffer Pool），
+不算丢失，redo log已经落盘，崩溃重启后重放redo log就可以恢复到commit时的状态
+4  
+  redo log：重做————把已经commit但是脏页没刷盘的事务重新应用，保证持久性
+  undo log：回滚————把未commit事务已做的修改撤销，保证原子性5
+5 两阶段提交
+  1.写redo log，标记为prepare
+  2.写binlog
+  3.redo log写入commit标记
+  崩溃恢复时的判断————只看redo log是否有commit+binlog是否完整
+  -崩溃在redo prepare已写，binlog未写：redo只有prepare，查binlog没有这条事务->不完整->回滚
+  -崩溃在binlog已写，commit未写：redo只有prepare，查binlog这条事务完整->提交（因为binlog可能已被从库中取走，回滚会导致主从不一致）
+6 binlog两种格式
+  statement：纪录sql原文。问题含有now(),uuid()等上下文依赖函数时，主从执行结果可能不一致
+  row：记录每一行数据的具体变化。解决主从一致性问题，代价时日志体积大（一条全表update要记所有行）
+  mixed：MYSQL自动判断用哪种，statement还是row
+7 有redo log为什么还有binlog
+  redo log循环写，固定大小，旧纪录会被覆盖，无法保存全量历史————不能做数据恢复和归档
+  redo log时InnoDB引擎的私有日志，其他引擎没有————Serve层需要一份统一日志做主从复制
+8 write pos和checkpoint
+  write pos当前写入位置，顺时针往后写
+  checkpoint可覆盖分界线，之前的记录对应藏页已刷盘，空间可以被覆盖复用
+  二者重合时，redo log写满————必须先把脏页刷盘，推进checkpoint，腾出空间才能继续写
+9 undo log
+  还可以用于MVCC，每条记录的undo log串成版本链，配合ReadView按规则找可见版本，实现快照读，RR隔离级的底层基础
+  
