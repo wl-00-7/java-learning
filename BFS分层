@@ -1,0 +1,11 @@
+起手式，固定模板
+while(!q.isEmpty()){
+int size=q.size();
+for(int i=0;i<size;i++){
+
+}}
+检查点
+  while里面的！在不在
+  int size =q.size()在while里面for的外面
+  k<size
+  入队前立刻标记状态（烂橘子题中扩散后改为2标记被感染）
