@@ -1,0 +1,8 @@
+1.注册容器    @Service,@RestController,@Mapper,@Componernt    加在类上  “我是xx层”
+2.路由        @RequestMapping,@GetMapping,@PostMapping        加在Controller类和方法上  “什么URL”
+3.参数        @RequestPaeam,@PathVariable,@RequestBody        加在方法参数上  “参数从哪里来”
+4.事务        @Transactional                                  加在方法上  “要事务”
+5.注入        @Autowired                                      加在字段/构造器上
+6.Lombok     @Data,@RequiredArgsConstructor                   加在类上  “省我写代码”（好像是final的构造器）
+7.配置       @Configuration,@Bean,@Value                      加在类/方法上
+  
